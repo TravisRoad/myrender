@@ -51,6 +51,7 @@ int main(int argc, char **argv)
     {
         line(40, 20, 800, 400, image, red);
         line(800, 400, 13, 20, image, white);
+        line(900, 10, 13, 400, image, red);
     }
     // image.flip_vertically();
     image.write_tga_file("out.tga");
