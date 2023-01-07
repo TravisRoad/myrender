@@ -29,7 +29,7 @@ Model::Model(const char *filename) : verts_(), faces_() {
 			iss >> trash;
 			// The 'f' leading line is just like "f 1/2/3 4/5/6 7/8/9".
 			// The "1/2/3" is vertex_index/texture_index/normal_index
-			// perspectively. Put texture_index and normal_index into itrash.
+			// respectively. Put texture_index and normal_index into itrash.
 			// Put slash into trash.
 			while (iss >> idx >> trash >> itrash >> trash >> itrash) {
 				idx--;

@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
 project(myrender VERSION 0.1)
 
-add_executable(${PROJECT_NAME} src/main.cpp src/utils/model.cpp)
+add_executable(${PROJECT_NAME}
+    src/main.cpp
+    src/utils/model.cpp
+    src/utils/triangle.cpp)
 
 add_library(tgaimage src/tgaimage.cpp)
 target_include_directories(tgaimage PUBLIC ${PROJECT_SOURCE_DIR}/include)
