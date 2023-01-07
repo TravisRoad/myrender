@@ -19,4 +19,5 @@ _deps
 *-prefix/
 
 build
+.vscode
 # End of https://www.toptal.com/developers/gitignore/api/cmake
