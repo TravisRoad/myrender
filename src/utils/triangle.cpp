@@ -117,6 +117,13 @@ void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, TGAColor color) {
 	}
 }
 
+/// @brief use z-buffer and tex
+/// @param pts coords of points
+/// @param vts uv of points
+/// @param zbuffer zbuffer array (a width*height array)
+/// @param image output image
+/// @param tex texture
+/// @param intensity light intensity (without gamma)
 void triangle(Vec3f *pts, Vec3f *vts, float *zbuffer, TGAImage &image,
 			  TGAImage &tex, float intensity) {
 	Vec2f bboxmin(std::numeric_limits<float>::max(),
