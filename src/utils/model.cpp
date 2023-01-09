@@ -5,7 +5,7 @@
 #include <sstream>
 #include <string>
 
-Model::Model(const char *filename) : verts_(), faces_() {
+Model::Model(const char *filename) : verts_(), faces_(), vts_() {
 	std::ifstream in;
 	in.open(filename, std::ifstream::in);
 	if (in.fail()) {
@@ -25,17 +25,27 @@ Model::Model(const char *filename) : verts_(), faces_() {
 			verts_.push_back(v);
 		} else if (!line.compare(0, 2, "f ")) {
 			std::vector<int> f;
-			int itrash, idx;
+			std::vector<int> fvt;
+
+			int itrash, idx, tdx;
 			iss >> trash;
 			// The 'f' leading line is just like "f 1/2/3 4/5/6 7/8/9".
 			// The "1/2/3" is vertex_index/texture_index/normal_index
 			// respectively. Put texture_index and normal_index into itrash.
 			// Put slash into trash.
-			while (iss >> idx >> trash >> itrash >> trash >> itrash) {
+			while (iss >> idx >> trash >> tdx >> trash >> itrash) {
 				idx--;
 				f.push_back(idx);
+				tdx--;
+				fvt.push_back(tdx);
 			}
 			faces_.push_back(f);
+			faces_tex_.push_back(fvt);
+		} else if (!line.compare(0, 3, "vt ")) {
+			iss >> trash >> trash;
+			Vec3f vt;
+			for (int i = 0; i < 3; i++) iss >> vt[i];
+			vts_.push_back(vt);
 		}
 	}
 	std::cerr << "# v# " << verts_.size() << "# f# " << faces_.size()
@@ -50,9 +60,15 @@ int Model::nverts() { return (int)verts_.size(); }
 
 int Model::nfaces() { return (int)faces_.size(); }
 
+int Model::nvts() { return (int)vts_.size(); }
+
 /// @brief face 3 vector
 /// @param idx index of face
 /// @return face
 std::vector<int> Model::face(int idx) { return faces_[idx]; }
 
-Vec3f Model::vert(int idx) { return verts_[idx]; }
+std::vector<int> Model::face_tex(int idx) { return faces_tex_[idx]; }
+
+Vec3f Model::vert(int i) { return verts_[i]; }
+
+Vec3f Model::vts(int i) { return vts_[i]; }

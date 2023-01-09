@@ -67,6 +67,44 @@ template <typename T> struct vec<3, T> {
 	T x, y, z;
 };
 
+template <typename T> struct vec<4, T> {
+	vec() : x(T()), y(T()), z(T()), w(T()) {}
+	vec(T X, T Y, T Z, T W) : x(X), y(Y), z(Z), w(W) {}
+	template <class U> vec<4, T>(const vec<4, U> &v);
+	T &operator[](const size_t i) {
+		assert(i < 4);
+		switch (i) {
+		case 0:
+			return x;
+		case 1:
+			return y;
+		case 2:
+			return z;
+		case 3:
+			return w;
+		}
+	}
+	const T &operator[](const size_t i) const {
+		assert(i < 4);
+		switch (i) {
+		case 0:
+			return x;
+		case 1:
+			return y;
+		case 2:
+			return z;
+		case 3:
+			return w;
+		}
+	}
+	float norm() { return std::sqrt(x * x + y * y + z * z + w * w); }
+	vec<3, T> &normalize(T l = 1) {
+		*this = (*this) * (l / norm());
+		return *this;
+	}
+
+	T x, y, z, w;
+};
 /////////////////////////////////////////////////////////////////////////////////
 
 template <size_t DIM, typename T>

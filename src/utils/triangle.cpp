@@ -90,28 +90,6 @@ void triangle(Vec2i *pts, TGAImage &image, TGAColor color) {
 // 	}
 // }
 
-// void triangle(Vec2i t0, Vec2i t1, Vec2i t2, TGAImage &image, TGAColor color)
-// { 	if (t0.y == t1.y && t0.y == t2.y) 		return; // i dont care about
-// degenerate
-// triangles 	if (t0.y > t1.y) std::swap(t0, t1); 	if (t0.y > t2.y)
-// std::swap(t0, t2); 	if (t1.y > t2.y) std::swap(t1, t2); 	int total_height
-// = t2.y - t0.y; 	for (int i = 0; i < total_height; i++) { 		bool
-// second_half = i > t1.y - t0.y || t1.y == t0.y; 		int segment_height =
-// second_half ? t2.y - t1.y : t1.y - t0.y; 		float alpha = (float)i /
-// total_height; 		float beta = (float)(i - (second_half ? t1.y - t0.y :
-// 0))
-// / 					 segment_height; // be careful: with above conditions no
-// 									 // division by zero here
-// 		Vec2i A = t0 + (t2 - t0) * alpha;
-// 		Vec2i B = second_half ? t1 + (t2 - t1) * beta : t0 + (t1 - t0) * beta;
-// 		if (A.x > B.x) std::swap(A, B);
-// 		for (int j = A.x; j <= B.x; j++) {
-// 			image.set(j, t0.y + i,
-// 					  color); // attention, due to int casts t0.y+i != A.y
-// 		}
-// 	}
-// }
-
 void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, TGAColor color) {
 	Vec2f bboxmin(std::numeric_limits<float>::max(),
 				  std::numeric_limits<float>::max());
@@ -131,6 +109,47 @@ void triangle(Vec3f *pts, float *zbuffer, TGAImage &image, TGAColor color) {
 			if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0) continue;
 			P.z = 0;
 			for (int i = 0; i < 3; i++) P.z += pts[i][2] * bc_screen[i];
+			if (zbuffer[int(P.x + P.y * image.width())] < P.z) {
+				zbuffer[int(P.x + P.y * image.width())] = P.z;
+				image.set(P.x, P.y, color);
+			}
+		}
+	}
+}
+
+void triangle(Vec3f *pts, Vec3f *vts, float *zbuffer, TGAImage &image,
+			  TGAImage &tex, float intensity) {
+	Vec2f bboxmin(std::numeric_limits<float>::max(),
+				  std::numeric_limits<float>::max());
+	Vec2f bboxmax(-std::numeric_limits<float>::max(),
+				  -std::numeric_limits<float>::max());
+	Vec2f clamp(image.width() - 1, image.height() - 1);
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 2; j++) {
+			bboxmin[j] = std::max(0.f, std::min(bboxmin[j], pts[i][j]));
+			bboxmax[j] = std::min(clamp[j], std::max(bboxmax[j], pts[i][j]));
+		}
+	}
+	Vec3f P;
+	for (P.x = bboxmin.x; P.x <= bboxmax.x; P.x++) {
+		for (P.y = bboxmin.y; P.y <= bboxmax.y; P.y++) {
+			Vec3f bc_screen = barycentric(pts[0], pts[1], pts[2], P);
+			if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0) continue;
+			P.z = 0;
+			for (int i = 0; i < 3; i++) P.z += pts[i][2] * bc_screen[i];
+
+			TGAColor color;
+
+			Vec3f vtP(0., 0., 0.);
+			for (int i = 0; i < 3; i++) {
+				Vec3f uv(vts[i].x * tex.width(), vts[i].y * tex.height(), 0.);
+				vtP = vtP + uv * bc_screen[i];
+			}
+			color = tex.get(int(vtP.x), int(vtP.y));
+			for (int i = 0; i < 4; i++) {
+				color[i] *= intensity;
+			}
+
 			if (zbuffer[int(P.x + P.y * image.width())] < P.z) {
 				zbuffer[int(P.x + P.y * image.width())] = P.z;
 				image.set(P.x, P.y, color);
