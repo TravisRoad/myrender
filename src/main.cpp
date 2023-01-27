@@ -13,6 +13,7 @@ const int height = 800;
 const int depth = 255;
 const Vec3f camera(0, 0, 3);
 
+// x, y for translate, w, h for scale
 Matrix viewport(float x, float y, float w, float h) {
 	Matrix ret = Matrix::identity();
 	ret[0][0] = w / 2.f;
