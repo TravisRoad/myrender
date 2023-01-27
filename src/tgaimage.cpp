@@ -49,10 +49,8 @@ bool TGAImage::read_tga_file(const std::string filename) {
 		std::cerr << "unknown file format " << (int)header.datatypecode << "\n";
 		return false;
 	}
-	if (!(header.imagedescriptor & 0x20))
-		flip_vertically();
-	if (header.imagedescriptor & 0x10)
-		flip_horizontally();
+	if (!(header.imagedescriptor & 0x20)) flip_vertically();
+	if (header.imagedescriptor & 0x10) flip_horizontally();
 	std::cerr << w << "x" << h << "/" << bpp * 8 << "\n";
 	in.close();
 	return true;
@@ -186,14 +184,12 @@ bool TGAImage::unload_rle_data(std::ofstream &out) const {
 			for (int t = 0; succ_eq && t < bpp; t++)
 				succ_eq = (data[curbyte + t] == data[curbyte + t + bpp]);
 			curbyte += bpp;
-			if (1 == run_length)
-				raw = !succ_eq;
+			if (1 == run_length) raw = !succ_eq;
 			if (raw && succ_eq) {
 				run_length--;
 				break;
 			}
-			if (!raw && !succ_eq)
-				break;
+			if (!raw && !succ_eq) break;
 			run_length++;
 		}
 		curpix += run_length;
@@ -213,14 +209,12 @@ bool TGAImage::unload_rle_data(std::ofstream &out) const {
 }
 
 TGAColor TGAImage::get(const int x, const int y) const {
-	if (!data.size() || x < 0 || y < 0 || x >= w || y >= h)
-		return {};
+	if (!data.size() || x < 0 || y < 0 || x >= w || y >= h) return {};
 	return TGAColor(data.data() + (x + y * w) * bpp, bpp);
 }
 
 void TGAImage::set(int x, int y, const TGAColor &c) {
-	if (!data.size() || x < 0 || y < 0 || x >= w || y >= h)
-		return;
+	if (!data.size() || x < 0 || y < 0 || x >= w || y >= h) return;
 	memcpy(data.data() + (x + y * w) * bpp, c.bgra, bpp);
 }
 

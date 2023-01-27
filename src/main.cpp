@@ -5,46 +5,49 @@
 #include <vector>
 
 #define NUM 1
-// #define DEBUG
 
 const TGAColor white = TGAColor(255, 255, 255, 255);
 const TGAColor red = TGAColor(255, 0, 0, 255);
 const int width = 800;
 const int height = 800;
+const int depth = 255;
+const Vec3f camera(0, 0, 3);
 
-void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
-	bool steep = false;
-	if (std::abs(x0 - x1) < std::abs(y0 - y1)) {
-		std::swap(x0, y0);
-		std::swap(x1, y1);
-		steep = true;
-	}
-	if (x0 > x1) {
-		std::swap(x0, x1);
-		std::swap(y0, y1);
-	}
-	int dx = x1 - x0;
-	int dy = y1 - y0;
-	int derror = std::abs(dy) * 2; // dy/dx * (dx * 2)
-	int error = 0;
-	int y = y0;
-	for (int x = x0; x < x1; x++) {
-		if (steep) {
-			image.set(y, x, color);
-		} else {
-			image.set(x, y, color);
-		}
-		error += derror;
-		if (error > dx) // 0.5 * (dx * 2)
-		{
-			y += (y1 - y0 > 0 ? 1 : -1);
-			error -= dx * 2; // 1 * (dx * 2)
-		}
-	}
+Matrix viewport(float x, float y, float w, float h) {
+	Matrix ret = Matrix::identity();
+	ret[0][0] = w / 2.f;
+	ret[1][1] = h / 2.f;
+	ret[2][2] = depth / 2.f;
+
+	ret[0][3] = x + w / 2.f;
+	ret[1][3] = y + h / 2.f;
+	ret[2][3] = depth / 2.f;
+	return ret;
+}
+
+Vec4f v3to4f(Vec3f v3) {
+	Vec4f ret;
+	ret[0] = v3[0];
+	ret[1] = v3[1];
+	ret[2] = v3[2];
+	ret[3] = 1;
+	return ret;
+}
+
+Vec3f v4to3f(Vec4f v4) {
+	Vec3f ret;
+	ret[0] = v4[0] / v4[3];
+	ret[1] = v4[1] / v4[3];
+	ret[2] = v4[2] / v4[3];
+	return ret;
 }
 
 void drawModel(Model *model, TGAImage &image, TGAImage &tex, float *zbuffer) {
 	Vec3f light_dir(0, 0, -1);
+	Matrix projection = Matrix::identity();
+	projection[3][2] = -1.f / camera.z;
+	Matrix Viewport =
+		viewport(width / 8.f, height / 8.f, width * 3 / 4.f, height * 3 / 4.f);
 
 	for (int i = 0; i < model->nfaces(); i++) {
 		std::vector<int> face = model->face(i);
@@ -54,8 +57,7 @@ void drawModel(Model *model, TGAImage &image, TGAImage &tex, float *zbuffer) {
 		Vec3f tex_uvs[3];
 		for (int j = 0; j < 3; j++) {
 			Vec3f v = model->vert(face[j]);
-			screen_coords[j] = Vec3f(int((v.x + 1.f) * width / 2.f),
-									 int((v.y + 1.f) * height / 2.f), v.z);
+			screen_coords[j] = v4to3f(Viewport * projection * v3to4f(v));
 			world_coords[j] = v;
 
 			// texture
@@ -67,17 +69,6 @@ void drawModel(Model *model, TGAImage &image, TGAImage &tex, float *zbuffer) {
 		normal.normalize();
 		float intensity = normal * light_dir;
 		if (intensity > 0) {
-			// triangle(screen_coords, zbuffer, image,
-			// 		 TGAColor(intensity * 255, intensity * 255, intensity * 255,
-			// 				  255));
-			// Vec2i pts[3];
-			// for (int i = 0; i < 3; i++) {
-			// 	pts[i].x = int(screen_coords[i].x);
-			// 	pts[i].y = int(screen_coords[i].y);
-			// }
-			// triangle(pts, image,
-			// 		 TGAColor(intensity * 255, intensity * 255, intensity * 255,
-			// 				  255));
 			triangle(screen_coords, tex_uvs, zbuffer, image, tex, intensity);
 		}
 	}
@@ -89,7 +80,6 @@ int main(int argc, char **argv) {
 	Model model("../assets/obj/african_head.obj");
 
 	texture.read_tga_file("../assets/tex/african_head_diffuse.tga");
-	// texture.flip_horizontally();
 	texture.flip_vertically();
 
 	float *zbuffer = new float[width * height];
@@ -98,13 +88,19 @@ int main(int argc, char **argv) {
 
 	drawModel(&model, image, texture, zbuffer);
 
+	{
+		TGAImage zbImage(width, height, TGAImage::RGB);
+		for (int x = 0; x < width; x++) {
+			for (int y = 0; y < height; y++) {
+				int zval = int(zbuffer[x + y * image.width()]);
+				zbImage.set(x, y, TGAColor(zval, zval, zval, 255));
+			}
+		}
+		zbImage.write_tga_file("zbuffer.tga");
+	}
+
 	image.write_tga_file("out.tga");
 
 	delete zbuffer;
 	return 0;
-}
-
-Vec3f world2screen(Vec3f v) {
-	return Vec3f(int((v.x + 1.) * width / 2. + .5),
-				 int((v.y + 1.) * height / 2. + .5), v.z);
 }
