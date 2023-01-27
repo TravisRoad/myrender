@@ -62,6 +62,8 @@ int Model::nfaces() { return (int)faces_.size(); }
 
 int Model::nvts() { return (int)vts_.size(); }
 
+int Model::nvns() { return (int)vns_.size(); }
+
 /// @brief face 3 vector
 /// @param idx index of face
 /// @return face
@@ -69,6 +71,10 @@ std::vector<int> Model::face(int idx) { return faces_[idx]; }
 
 std::vector<int> Model::face_tex(int idx) { return faces_tex_[idx]; }
 
+std::vector<int> Model::face_normals(int idx) { return faces_normal_[idx]; }
+
 Vec3f Model::vert(int i) { return verts_[i]; }
 
 Vec3f Model::vts(int i) { return vts_[i]; }
+
+Vec3f Model::vns(int i) { return vns_[i]; }
