@@ -45,7 +45,8 @@ void triangle(Vec3f *pts, Vec3f *vts, float *zbuffer, TGAImage &image,
 				Vec2f uv(vts[i].x * tex.width(), vts[i].y * tex.height());
 				vtP = vtP + uv * bc_screen[i];
 			}
-			color = tex.get(int(vtP.x), int(vtP.y));
+			// color = tex.get(int(vtP.x), int(vtP.y));
+			color = TGAColor(255, 255, 255, 255);
 			for (int i = 0; i < 4; i++) {
 				color[i] *= intensity;
 			}

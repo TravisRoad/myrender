@@ -8,7 +8,7 @@ class Model {
   private:
 	std::vector<Vec3f> verts_;
 	std::vector<Vec3f> vts_;
-	std::vector<Vec3f> vns_;
+	std::vector<Vec3f> vns_; // vertex normal
 	std::vector<std::vector<int>> faces_;
 	std::vector<std::vector<int>> faces_tex_;
 	std::vector<std::vector<int>> faces_normal_;
