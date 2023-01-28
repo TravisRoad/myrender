@@ -12,7 +12,7 @@ const TGAColor red = TGAColor(255, 0, 0, 255);
 const int width = 800;
 const int height = 800;
 const int depth = 255;
-const Vec3f light_dir(0, 0, -1);
+const Vec3f light_dir = Vec3f(1, -1, 1).normalize();
 const Vec3f camera(1, 1, 3);
 const Vec3f center(0, 0, 0);
 
@@ -77,9 +77,12 @@ void drawModel(Model *model, TGAImage &image, TGAImage &tex, float *zbuffer) {
 	for (int i = 0; i < model->nfaces(); i++) {
 		std::vector<int> face = model->face(i);
 		std::vector<int> face_tex = model->face_tex(i);
+		std::vector<int> face_normals = model->face_normals(i);
 		Vec3f screen_coords[3];
 		Vec3f world_coords[3];
 		Vec3f tex_uvs[3];
+		Vec3f normals[3];
+		float intensity[3];
 		for (int j = 0; j < 3; j++) {
 			Vec3f v = model->vert(face[j]);
 			screen_coords[j] =
@@ -89,14 +92,13 @@ void drawModel(Model *model, TGAImage &image, TGAImage &tex, float *zbuffer) {
 			// texture
 			Vec3f vt = model->vts(face_tex[j]);
 			tex_uvs[j] = vt;
+
+			// normals
+			Vec3f normal = model->vns(face_normals[j]);
+			normals[j] = normal;
 		}
-		Vec3f normal = cross((world_coords[2] - world_coords[0]),
-							 (world_coords[1] - world_coords[0]));
-		normal.normalize();
-		float intensity = normal * light_dir;
-		if (intensity > 0) {
-			triangle(screen_coords, tex_uvs, zbuffer, image, tex, intensity);
-		}
+		triangle(screen_coords, tex_uvs, normals, zbuffer, image, tex,
+				 light_dir);
 	}
 }
 

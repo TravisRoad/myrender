@@ -83,6 +83,7 @@ template <typename T> struct vec<4, T> {
 		case 3:
 			return w;
 		}
+		return x; // trivial
 	}
 	const T &operator[](const size_t i) const {
 		assert(i < 4);
@@ -96,6 +97,7 @@ template <typename T> struct vec<4, T> {
 		case 3:
 			return w;
 		}
+		return x; // trivial
 	}
 	float norm() { return std::sqrt(x * x + y * y + z * z + w * w); }
 	vec<3, T> &normalize(T l = 1) {

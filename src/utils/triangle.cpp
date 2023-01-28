@@ -16,8 +16,8 @@ Vec3f barycentric(Vec3f A, Vec3f B, Vec3f C, Vec3i P) {
 							// will be thrown away by the rasterizator
 }
 
-void triangle(Vec3f *pts, Vec3f *vts, float *zbuffer, TGAImage &image,
-			  TGAImage &tex, float intensity) {
+void triangle(Vec3f *pts, Vec3f *vts, Vec3f *normals, float *zbuffer,
+			  TGAImage &image, TGAImage &tex, Vec3f light_dir) {
 	Vec2f bboxmin(std::numeric_limits<float>::max(),
 				  std::numeric_limits<float>::max());
 	Vec2f bboxmax(-std::numeric_limits<float>::max(),
@@ -46,10 +46,15 @@ void triangle(Vec3f *pts, Vec3f *vts, float *zbuffer, TGAImage &image,
 				vtP = vtP + uv * bc_screen[i];
 			}
 			// color = tex.get(int(vtP.x), int(vtP.y));
-			color = TGAColor(255, 255, 255, 255);
-			for (int i = 0; i < 4; i++) {
-				color[i] *= intensity;
+			color = TGAColor(255, 255, 255);
+			Vec3f P_normal(0.f, 0.f, 0.f);
+			float intensity = 0.f;
+			for (int i = 0; i < 3; i++) {
+				P_normal = P_normal + normals[i] * bc_screen[i];
 			}
+			intensity = light_dir * P_normal;
+			assert(intensity < 1);
+			color = color * intensity;
 
 			int idx = P.x + P.y * image.width();
 
