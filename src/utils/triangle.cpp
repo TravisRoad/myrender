@@ -1,4 +1,5 @@
 #include "triangle.h"
+#include <limits>
 
 Vec3f barycentric(Vec3f A, Vec3f B, Vec3f C, Vec3i P) {
 	Vec3f s[2];

@@ -2,6 +2,7 @@
 #include "tgaimage.h"
 #include "triangle.h"
 #include <iostream>
+#include <limits>
 #include <vector>
 
 #define NUM 1
