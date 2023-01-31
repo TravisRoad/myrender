@@ -5,7 +5,7 @@
 #include <sstream>
 #include <string>
 
-Model::Model(const char *filename) : verts_(), faces_(), vts_() {
+Model::Model(const char *filename) : verts_(), faces_(), uvs_() {
 	std::ifstream in;
 	in.open(filename, std::ifstream::in);
 	if (in.fail()) {
@@ -49,16 +49,32 @@ Model::Model(const char *filename) : verts_(), faces_(), vts_() {
 			iss >> trash >> trash;
 			Vec3f vt;
 			for (int i = 0; i < 3; i++) iss >> vt[i];
-			vts_.push_back(vt);
+			uvs_.push_back(vt);
 		} else if (!line.compare(0, 3, "vn ")) {
 			iss >> trash >> trash;
 			Vec3f nt;
 			for (int i = 0; i < 3; i++) iss >> nt[i];
-			vns_.push_back(nt);
+			normals_.push_back(nt);
 		}
 	}
 	std::cerr << "# v# " << verts_.size() << "# f# " << faces_.size()
 			  << std::endl;
+	load_texture(filename, "_diffuse.tga", diffusemap_);
+	load_texture(filename, "_nm.tga", normalmap_);
+	load_texture(filename, "_spec.tga", specularmap_);
+}
+
+void Model::load_texture(std::string filename, const char *suffix,
+						 TGAImage &img) {
+	std::string texfile(filename);
+	size_t dot = texfile.find_last_of(".");
+	if (dot != std::string::npos) {
+		texfile = texfile.substr(0, dot) + std::string(suffix);
+		std::cerr << "texture file " << texfile << " loading "
+				  << (img.read_tga_file(texfile.c_str()) ? "ok" : "failed")
+				  << std::endl;
+		img.flip_vertically();
+	}
 }
 
 Model::~Model() {}
@@ -69,21 +85,17 @@ int Model::nverts() { return (int)verts_.size(); }
 
 int Model::nfaces() { return (int)faces_.size(); }
 
-int Model::nvts() { return (int)vts_.size(); }
-
-int Model::nvns() { return (int)vns_.size(); }
-
 /// @brief face 3 vector
 /// @param idx index of face
 /// @return face
 std::vector<int> Model::face(int idx) { return faces_[idx]; }
 
-std::vector<int> Model::face_tex(int idx) { return faces_tex_[idx]; }
+std::vector<int> Model::face_uv(int idx) { return faces_tex_[idx]; }
 
-std::vector<int> Model::face_normals(int idx) { return faces_normal_[idx]; }
+std::vector<int> Model::face_normal(int idx) { return faces_normal_[idx]; }
 
 Vec3f Model::vert(int i) { return verts_[i]; }
 
-Vec3f Model::vts(int i) { return vts_[i]; }
+Vec3f Model::uv(int i) { return uvs_[i]; }
 
-Vec3f Model::vns(int i) { return vns_[i]; }
+Vec3f Model::normal(int i) { return normals_[i]; }

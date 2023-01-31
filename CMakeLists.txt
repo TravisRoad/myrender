@@ -4,7 +4,8 @@ project(myrender VERSION 0.1)
 add_executable(${PROJECT_NAME}
     src/main.cpp
     src/utils/model.cpp
-    src/utils/triangle.cpp)
+    src/utils/vectors.cpp
+    src/my_gl.cpp)
 
 add_library(tgaimage src/tgaimage.cpp)
 target_include_directories(tgaimage PUBLIC ${PROJECT_SOURCE_DIR}/include)
