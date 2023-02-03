@@ -102,7 +102,11 @@ TGAColor Model::diffuse(Vec2f _uv) {
 Vec3f Model::normal(Vec2f _uv) {
 	TGAColor normal_color = normalmap_.get(int(_uv.x * normalmap_.width()),
 										   int(_uv.y * normalmap_.height()));
-	return Vec3f(normal_color[0], normal_color[1], normal_color[2]).normalize();
+	Vec3f res;
+	for (int i = 0; i < 3; i++) {
+		res[i] = (float)normal_color[i] / 255.f * 2.f - 1.f;
+	}
+	return res;
 }
 
 Vec3f Model::vert(int i) { return verts_[i]; }

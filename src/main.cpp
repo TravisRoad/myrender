@@ -76,6 +76,7 @@ struct TexNormalShader : public Shader {
 		Vec3f normal = model->normal(uv);
 		float intensity = std::max(0.f, normal * light_dir);
 		color = model->diffuse(uv) * intensity;
+		// color = TGAColor(255, 255, 255) * intensity;
 		return false;
 	}
 };
@@ -91,8 +92,10 @@ int main(int argc, char const *argv[]) {
 	projection(-1.f / (camera - center).norm());
 
 	TexNormalShader shader;
-	shader.uniform_M = Projection * ModelView;
-	shader.uniform_MIT = (Projection * ModelView).invert_transpose();
+	// shader.uniform_M = Projection * ModelView;
+	// shader.uniform_MIT = (Projection * ModelView).invert_transpose();
+
+	// TexShader shader;
 
 	for (int i = 0; i < model->nfaces(); i++) {
 		Vec4f screen_coords[3];
