@@ -31,6 +31,7 @@ class Model {
 	std::vector<int> face_normal(int idx);
 	TGAColor diffuse(Vec2f _uv);
 	Vec3f normal(Vec2f _uv);
+	float specular(Vec2f _uv);
 };
 
 #endif

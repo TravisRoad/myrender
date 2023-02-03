@@ -109,6 +109,12 @@ Vec3f Model::normal(Vec2f _uv) {
 	return res;
 }
 
+float Model::specular(Vec2f _uv) {
+	TGAColor color = specularmap_.get(int(_uv.x * specularmap_.width()),
+									  int(_uv.y * specularmap_.height()));
+	return color[0] * 1.f;
+}
+
 Vec3f Model::vert(int i) { return verts_[i]; }
 
 Vec2f Model::uv(int i) { return uvs_[i]; }

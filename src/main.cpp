@@ -60,8 +60,6 @@ struct TexShader : public Shader {
 
 struct TexNormalShader : public Shader {
 	mat<2, 3, float> varying_uv;
-	Matrix uniform_M;
-	Matrix uniform_MIT;
 
 	virtual Vec4f vertex(int iface, int nthvert) {
 		Vec2f uv = model->uv(model->face_uv(iface)[nthvert]);
@@ -81,6 +79,39 @@ struct TexNormalShader : public Shader {
 	}
 };
 
+struct PhongShader : public Shader {
+	mat<2, 3, float> varying_uv;
+	Matrix uniform_M;
+	Matrix uniform_MIT;
+
+	virtual Vec4f vertex(int iface, int nthvert) {
+		Vec2f uv = model->uv(model->face_uv(iface)[nthvert]);
+		varying_uv.set_col(nthvert, uv);
+		Vec4f Vertex = embed<4>(model->vert(model->face(iface)[nthvert]));
+		Vertex = Viewport * Projection * ModelView * Vertex;
+		return Vertex;
+	}
+
+	virtual bool fragment(Vec3f bar, TGAColor &color) {
+		Vec2f uv = varying_uv * bar;
+		Vec3f n =
+			proj<3>(uniform_MIT * embed<4>(model->normal(uv))).normalize();
+		Vec3f l = proj<3>(uniform_M * embed<4>(light_dir)).normalize();
+		Vec3f r = (n * (n * l * 2.f) - l).normalize();
+		float ambient = 2.0f;
+		float diffuse = std::max(0.f, n * l);
+		float specular =
+			pow(std::max(r.z, 0.f), model->specular(uv)); // v cross r
+		TGAColor c = model->diffuse(uv);
+		for (int i = 0; i < 3; i++) {
+			color[i] = int(std::min<float>(
+				ambient + c[i] * (diffuse + 0.7 * specular), 255));
+		}
+		// color = TGAColor(255, 255, 255) * intensity;
+		return false;
+	}
+};
+
 int main(int argc, char const *argv[]) {
 	model = new Model("../assets/obj/african_head.obj");
 
@@ -91,9 +122,10 @@ int main(int argc, char const *argv[]) {
 	viewport(width / 8.f, height / 8.f, width * 3.f / 4.f, height * 3.f / 4.f);
 	projection(-1.f / (camera - center).norm());
 
-	TexNormalShader shader;
-	// shader.uniform_M = Projection * ModelView;
-	// shader.uniform_MIT = (Projection * ModelView).invert_transpose();
+	// TexNormalShader shader;
+	PhongShader shader;
+	shader.uniform_M = Projection * ModelView;
+	shader.uniform_MIT = (Projection * ModelView).invert_transpose();
 
 	// TexShader shader;
 
