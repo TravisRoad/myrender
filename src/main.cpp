@@ -8,7 +8,7 @@
 const int width = 800;
 const int height = 800;
 
-const Vec3f light_dir = Vec3f(1, -1, 1).normalize();
+const Vec3f light_dir = Vec3f(1, 1, 1).normalize();
 const Vec3f camera(1, 1, 3);
 const Vec3f center(0, 0, 0);
 const Vec3f up(0, 1, 0);
