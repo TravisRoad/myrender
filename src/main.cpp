@@ -36,6 +36,50 @@ struct GouraudShader : public Shader {
 	}
 };
 
+struct TexShader : public Shader {
+	Vec3f varying_intensity;
+	mat<2, 3, float> varying_uv;
+
+	virtual Vec4f vertex(int iface, int nthvert) {
+		Vec2f uv = model->uv(model->face_uv(iface)[nthvert]);
+		varying_uv.set_col(nthvert, uv);
+		varying_intensity[nthvert] = std::max(
+			0.f, model->normal(model->face_normal(iface)[nthvert]) * light_dir);
+		Vec4f Vertex = embed<4>(model->vert(model->face(iface)[nthvert]));
+		Vertex = Viewport * Projection * ModelView * Vertex;
+		return Vertex;
+	}
+
+	virtual bool fragment(Vec3f bar, TGAColor &color) {
+		float intensity = varying_intensity * bar;
+		Vec2f uv = varying_uv * bar;
+		color = model->diffuse(uv) * intensity;
+		return false;
+	}
+};
+
+struct TexNormalShader : public Shader {
+	mat<2, 3, float> varying_uv;
+	Matrix uniform_M;
+	Matrix uniform_MIT;
+
+	virtual Vec4f vertex(int iface, int nthvert) {
+		Vec2f uv = model->uv(model->face_uv(iface)[nthvert]);
+		varying_uv.set_col(nthvert, uv);
+		Vec4f Vertex = embed<4>(model->vert(model->face(iface)[nthvert]));
+		Vertex = Viewport * Projection * ModelView * Vertex;
+		return Vertex;
+	}
+
+	virtual bool fragment(Vec3f bar, TGAColor &color) {
+		Vec2f uv = varying_uv * bar;
+		Vec3f normal = model->normal(uv);
+		float intensity = std::max(0.f, normal * light_dir);
+		color = model->diffuse(uv) * intensity;
+		return false;
+	}
+};
+
 int main(int argc, char const *argv[]) {
 	model = new Model("../assets/obj/african_head.obj");
 
@@ -46,7 +90,10 @@ int main(int argc, char const *argv[]) {
 	viewport(width / 8.f, height / 8.f, width * 3.f / 4.f, height * 3.f / 4.f);
 	projection(-1.f / (camera - center).norm());
 
-	GouraudShader shader;
+	TexNormalShader shader;
+	shader.uniform_M = Projection * ModelView;
+	shader.uniform_MIT = (Projection * ModelView).invert_transpose();
+
 	for (int i = 0; i < model->nfaces(); i++) {
 		Vec4f screen_coords[3];
 		for (int j = 0; j < 3; j++) {

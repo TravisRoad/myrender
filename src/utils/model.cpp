@@ -47,8 +47,8 @@ Model::Model(const char *filename) : verts_(), faces_(), uvs_() {
 			faces_normal_.push_back(fnt);
 		} else if (!line.compare(0, 3, "vt ")) {
 			iss >> trash >> trash;
-			Vec3f vt;
-			for (int i = 0; i < 3; i++) iss >> vt[i];
+			Vec2f vt;
+			for (int i = 0; i < 2; i++) iss >> vt[i];
 			uvs_.push_back(vt);
 		} else if (!line.compare(0, 3, "vn ")) {
 			iss >> trash >> trash;
@@ -94,8 +94,19 @@ std::vector<int> Model::face_uv(int idx) { return faces_tex_[idx]; }
 
 std::vector<int> Model::face_normal(int idx) { return faces_normal_[idx]; }
 
+TGAColor Model::diffuse(Vec2f _uv) {
+	return diffusemap_.get(int(_uv.x * diffusemap_.width()),
+						   int(_uv.y * diffusemap_.height()));
+}
+
+Vec3f Model::normal(Vec2f _uv) {
+	TGAColor normal_color = normalmap_.get(int(_uv.x * normalmap_.width()),
+										   int(_uv.y * normalmap_.height()));
+	return Vec3f(normal_color[0], normal_color[1], normal_color[2]);
+}
+
 Vec3f Model::vert(int i) { return verts_[i]; }
 
-Vec3f Model::uv(int i) { return uvs_[i]; }
+Vec2f Model::uv(int i) { return uvs_[i]; }
 
 Vec3f Model::normal(int i) { return normals_[i]; }
