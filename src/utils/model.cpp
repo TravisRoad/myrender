@@ -60,7 +60,7 @@ Model::Model(const char *filename) : verts_(), faces_(), uvs_() {
 	std::cerr << "# v# " << verts_.size() << "# f# " << faces_.size()
 			  << std::endl;
 	load_texture(filename, "_diffuse.tga", diffusemap_);
-	load_texture(filename, "_nm.tga", normalmap_);
+	load_texture(filename, "_nm_tangent.tga", normalmap_);
 	load_texture(filename, "_spec.tga", specularmap_);
 }
 
@@ -104,7 +104,7 @@ Vec3f Model::normal(Vec2f _uv) {
 										   int(_uv.y * normalmap_.height()));
 	Vec3f res;
 	for (int i = 0; i < 3; i++) {
-		res[i] = (float)normal_color[i] / 255.f * 2.f - 1.f;
+		res[2 - i] = (float)normal_color[i] / 255.f * 2.f - 1.f;
 	}
 	return res;
 }
